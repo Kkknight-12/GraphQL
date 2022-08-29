@@ -7,7 +7,8 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { BrowserRouter } from "react-router-dom";
 
 const client = new ApolloClient({
-  uri: "https://rickandmortyapi.com/graphql",
+  // uri: "https://rickandmortyapi.com/graphql",
+  uri: "https://graphql-compose.herokuapp.com/northwind/",
   cache: new InMemoryCache(),
 });
 

@@ -1,6 +1,8 @@
 import CharactersList from "./pages/CharactersList";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Character from "./pages/Character";
+import Search from "./pages/Search";
+import MutationCreateProduct from "./pages/Mutation-createProduct";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Routes>
         <Route path={"/"} element={<CharactersList />} />
         <Route path={"/:id"} element={<Character />} />
+        <Route path={"/search"} element={<Search />} />
+        <Route path={"/create"} element={<MutationCreateProduct />} />
       </Routes>
     </div>
   );

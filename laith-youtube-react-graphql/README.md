@@ -1,70 +1,320 @@
-# Getting Started with Create React App
+# Laith React 4
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[React With GraphQL (Apollo Client) Crash Course](https://www.youtube.com/watch?v=gAbIQx26wSI&t=2443s)
 
-## Available Scripts
+pwd
 
-In the project directory, you can run:
+```jsx
+/Users/knight/FrontEnd_Projects/GraphQl/laith-youtube-react-graphql
+```
 
-### `npm start`
+API used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```jsx
+https://rickandmortyapi.com/graphql
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import {
+  **ApolloClient,
+  InMemoryCache,
+  ApolloProvider,**
+} from "@apollo/client";
 
-### `npm test`
+const client = new **ApolloClient**({                 // 1
+  uri: "https://rickandmortyapi.com/graphql",    // 2
+  cache: new **InMemoryCache**(),                      // 3
+});
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <**ApolloProvider** client={client}>
+      <App />
+    </**ApolloProvider**>
+  </React.StrictMode>
+);
 
-### `npm run build`
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+ Using **ApolloClient (1)** to create ****our base **url (2)**  where we would like to fetch data from. It takes 2 parameter `uri: '' , cache:`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- once made query, graphql memories it. so time we make same query instead of hitting graphql server we can get data from **cache(3)**.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Get Data From Graphql server
 
-### `npm run eject`
+for convienence create a custom hook which will do the job for us
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- create a query with **gql** ` ` , for making query we write **query** keyword
+- use **useQuery** hook from graphql to fetch the data
+- return the data to be used by components
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```jsx
+import { **useQuery**, **gql** } from "@apollo/client";
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+// --------------------------------------------------------------------------------------
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+const GET_CHARACTERS = **gql**`
+  **query** {
+    characters {
+      results {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
 
-## Learn More
+export const useCharacters = () => {
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  const { data, error, loading } = **useQuery**(GET_CHARACTERS);
+  return {
+    data,
+    error,
+    loading,
+  };
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+};
+```
 
-### Code Splitting
+```jsx
+import React from "react";
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+import { useCharacters } from "../hooks/useCharacter";
 
-### Analyzing the Bundle Size
+// --------------------------------------------------------------------------------------
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+function CharactersList(props) {
 
-### Making a Progressive Web App
+  const { data, error, loading } = **useCharacters**();
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+  console.log("data", data);
 
-### Advanced Configuration
+  if (loading)
+    return (
+      <h2
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        Loading........
+      </h2>
+    );
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+  if (error) return <div>Error...!</div>;
 
-### Deployment
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-evenly",
+      }}
+    >
+      {data?.characters?.results?.map((character) => {
+        return (
+          <div key={character.name}>
+            <img src={character.image} alt={character.name} />
+            <p>{character.name}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+export default CharactersList;
+```
 
-### `npm run build` fails to minify
+### make specific query →:id
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```jsx
+import React from "react";
+import { gql, useQuery } from "@apollo/client";
+
+const GET_CHARACTER = gql`
+  **query** GetCharacter(**$id**: **ID!**) {    // ID is a special type ! says its neccessary to pass id
+    character(**id**: **$id**) {
+      name
+      id
+      image
+      episode {
+        name
+        episode
+      }
+    }
+  }
+`;
+
+function Character(id) {
+  const { data, error, loading } = useQuery(GET_CHARACTER, {
+    **variables**: {
+      **id**,
+    },
+  });
+
+  return {
+    data,
+    error,
+    loading,
+  };
+}
+
+export default Character;
+```
+
+apollo examples
+
+- 1
+    
+    [Queries](https://www.apollographql.com/docs/react/data/queries/#options)
+    
+    ```jsx
+    const GET_DOG_PHOTO = gql`
+      query Dog($breed: String!) {
+        dog(breed: $breed) {
+          id
+          displayImage
+        }
+      }
+    `;
+    
+    function DogPhoto({ breed }) {
+      const { loading, error, data } = useQuery(GET_DOG_PHOTO, {
+        variables: { breed },
+      });
+    
+      if (loading) return null;
+      if (error) return `Error! ${error}`;
+    
+      return (
+        <img src={data.dog.displayImage} style={{ height: 100, width: 100 }} />
+      );
+    }
+    ```
+    
+- 2
+    
+    [Hooks](https://www.apollographql.com/docs/react/api/react/hooks)
+    
+    ```jsx
+    import { gql, useQuery } from '@apollo/client';
+    
+    const GET_GREETING = gql`
+      query GetGreeting($language: String!) {
+        greeting(language: $language) {
+          message
+        }
+      }
+    `;
+    
+    function Hello() {
+      const { loading, error, data } = useQuery(GET_GREETING, {
+        variables: { language: 'english' },
+      });
+      if (loading) return <p>Loading ...</p>;
+      return <h1>Hello {data.greeting.message}!</h1>;
+    }
+    ```
+    
+
+### Lazy Query
+
+usefull when we want to perform search query
+
+find Explanation in OneNote ⇒ GraphQL/lazyQuery
+
+```jsx
+import React, { useState } from "react";
+import { gql, useLazyQuery } from "@apollo/client";
+
+const GET_CHARACTER_LOCATIONS = gql`
+  **query** GetCharacterLocations($name: String!) {
+    characters(filter: { name: $name }) {
+      results {
+        location {
+          name
+        }
+      }
+    }
+  }
+`;
+
+function Search(props) {
+  const [name, setName] = useState("");
+  const [getLocations, { loading, error, data, called }] = useLazyQuery(
+    GET_CHARACTER_LOCATIONS,
+    {
+      variables: {
+        name,
+      },
+    }
+  );
+  console.log("data", data);
+
+  return (
+    <div>
+      <input
+        value={name}
+        type="text"
+        onChange={(e) => setName(e.target.value)}
+      />
+      <button onClick={() => getLocations()}>Search</button>
+    </div>
+  );
+}
+
+export default Search;
+```
+
+### Mutation
+
+```jsx
+https://graphql-compose.herokuapp.com/northwind/
+```
+
+mutation query to Create ⇒ POST request
+
+```jsx
+**mutation**{
+  createProduct(record:{
+    name: "Hot Beach",
+    supplierID:1,
+    productID: 123.3123,
+    categoryID:123321,
+  }){
+    record{name} // data that we want to get 
+  }
+}
+```
+
+response
+
+```jsx
+{
+  "data": {
+    "createProduct": {
+      "record": {
+        "name": "Hot Beach"
+      }
+    }
+  },
+  "extensions": {
+    "complexity": 3,
+    "maxComplexity": 10000
+  }
+}
+```
